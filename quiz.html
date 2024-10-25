@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Website</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('https://w0.peakpx.com/wallpaper/269/270/HD-wallpaper-doctor-motivation-medical-study.jpg');
+            background-size: cover;
+            background-position: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .quiz-sec {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        #quiz h2 {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+        }
+
+        .answer {
+            display: none;
+        }
+
+        label {
+            display: block;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, border 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        label:hover {
+            border: 2px solid #007bff;
+        }
+
+        label.correct {
+            background-color: #28a745;
+            color: #ffffff;
+        }
+
+        label.incorrect {
+            background-color: #dc3545;
+            color: #ffffff;
+        }
+
+        #reset {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #reset:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-sec">
+        <div id="quiz">
+            <div class="question-number" id="question-number"></div>
+            <h2 class="question" id="question"></h2>
+            <hr/>
+            <ul id="options-list"></ul>
+            <hr>
+            <button id="reset" onclick="resetQuiz()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+        {
+    question: "Guard cell of the stoma is:",
+       options: ["Kidney shaped", "Convex shaped", "Longitudinal and cylindrical shaped", "Dumb-bell shaped"],
+    answer: "Kidney shaped"
+} ,
+{
+    question: "Sugarcane shows high efficiency of CO2 fixation because it performs:",
+    options: ["Calvin cycle", "EMP pathway", "Hatch & Slack pathway", "TCA cycle"],
+    answer: "Hatch & Slack pathway"
+},
+{
+    question: "Which of the following components of plants have no nucleus?",
+    options: ["Companion cells", "Sieve tube", "Pith", "Cambium"],
+    answer: "Sieve tube"
+},
+{
+    question: "Jewels of the plant kingdom are:",
+    options: ["Bacteria", "Diatoms", "Dinoflagellates", "None"],
+    answer: "Diatoms"
+},
+{
+    question: "Which one is a true moss?",
+    options: ["Cord moss", "Bog or peat moss", "Hair cap moss", "All of the above"],
+    answer: "All of the above"
+},
+{
+    question: "Xylem in root is:",
+    options: ["Endarch", "Exarch", "Mesarch", "None"],
+    answer: "Exarch"
+},
+{
+    question: "Total number of haploid nuclei in an embryo sac is:",
+    options: ["4", "8", "6", "3"],
+    answer: "8"
+},
+{
+    question: "Rejection of transplanted organ is due to:",
+    options: ["T-cells", "B-cells", "Eosinophils", "Neutrophils"],
+    answer: "T-cells"
+},
+{
+    question: "Tea is a good stimulant due to the presence of:",
+    options: ["Morphine", "Ephedrine", "Nicotine", "Caffeine"],
+    answer: "Caffeine"
+},
+{
+    question: "Tendrils exhibit/twinning of tendrils is due to:",
+    options: ["Seismonasty", "Thigmotropism", "Heliotropism", "Diageotropism"],
+    answer: "Thigmotropism"
+},
+{
+    question: "Gaseous exchange in submerged plants occurs by:",
+    options: ["Hydathodes", "Lenticels", "Stomata", "General surface"],
+    answer: "General surface"
+}
+
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionNumberElement = document.getElementById("question-number");
+        const questionElement = document.getElementById("question");
+        const optionsList = document.getElementById("options-list");
+        const resetButton = document.getElementById("reset");
+
+        function loadQuestion() {
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionNumberElement.textContent = `Question ${currentQuestionIndex + 1}`;
+            questionElement.textContent = currentQuestion.question;
+            optionsList.innerHTML = "";
+
+            currentQuestion.options.forEach((option, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <input type="radio" name="answer" class="answer" id="option${index}" value="${option}">
+                    <label for="option${index}" id="option${index}-label" onclick="checkAnswer('${option}', ${index})">${option}</label>
+                `;
+                optionsList.appendChild(li);
+            });
+        }
+
+        function checkAnswer(selectedOption, index) {
+            const currentQuestion = quizData[currentQuestionIndex];
+            const optionLabels = optionsList.getElementsByTagName("label");
+
+            if (selectedOption === currentQuestion.answer) {
+                optionLabels[index].classList.add("correct");
+                score++;
+            } else {
+                optionLabels[index].classList.add("incorrect");
+                for (let i = 0; i < optionLabels.length; i++) {
+                    if (optionLabels[i].textContent === currentQuestion.answer) {
+                        optionLabels[i].classList.add("correct");
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1000);
+        }
+
+        function showResults() {
+            questionNumberElement.textContent = "Quiz Completed";
+            questionElement.textContent = `You scored ${score} out of ${quizData.length}!`;
+            optionsList.innerHTML = "";
+            resetButton.style.display = "block";
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resetButton.style.display = "none";
+            loadQuestion();
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
